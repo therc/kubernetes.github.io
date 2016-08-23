@@ -1,4 +1,8 @@
 ---
+assignees:
+- mikedanese
+- thockin
+
 ---
 
 This document describes the environment for Kubelet managed containers on a Kubernetes node (kNode).  In contrast to the Kubernetes cluster API, which provides an API for creating and managing containers, the Kubernetes container environment provides the container access to information about what else is going on in the cluster.
@@ -48,7 +52,7 @@ There are currently two container hooks that are surfaced to containers:
 
 *PostStart*
 
-This hook is sent immediately after a container is created.  It notifies the container that it has been created.  No parameters are passed to the handler.
+This hook is sent immediately after a container is created.  It notifies the container that it has been created.  No parameters are passed to the handler. It is NOT guaranteed that the hook will execute before the container entrypoint.
 
 *PreStop*
 

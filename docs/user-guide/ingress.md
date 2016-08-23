@@ -1,4 +1,7 @@
 ---
+assignees:
+- bprashanth
+
 ---
 
 * TOC
@@ -28,7 +31,7 @@ Typically, services and pods have IPs only routable by the cluster network. All 
 An Ingress is a collection of rules that allow inbound connections to reach the cluster services.
 
 ```
-internet
+    internet
         |
    [ Ingress ]
    --|-----|--
@@ -39,12 +42,17 @@ It can be configured to give services externally-reachable urls, load balance tr
 
 ## Prerequisites
 
-Before you start using the Ingress resource, there are a few things you should understand:
+Before you start using the Ingress resource, there are a few things you should understand. The Ingress is a beta resource, not available in any Kubernetes release prior to 1.1. You need an Ingress controller to satisfy an Ingress, simply creating the resource will have no effect.
 
-* The Ingress is a beta resource, not available in any Kubernetes release prior to 1.1.
-* You need an Ingress controller to satisfy an Ingress. Simply creating the resource will have no effect.
-* On GCE/GKE there should be a [L7 cluster addon](https://releases.k8s.io/{{page.githubbranch}}/cluster/addons/cluster-loadbalancing/glbc/README.md#prerequisites), on other platforms you either need to write your own or [deploy an existing controller](https://github.com/kubernetes/contrib/tree/master/ingress) as a pod.
-* The resource currently does not support HTTPS, but will do so before it leaves beta.
+On GCE/GKE there should be a [L7 cluster addon](https://github.com/kubernetes/contrib/blob/master/ingress/controllers/gce/README.md), deployed into the `kube-system` namespace:
+
+```shell
+$ kubectl get pods --namespace=kube-system -l k8s-app=glbc
+NAME                            READY     STATUS    RESTARTS   AGE
+l7-lb-controller-v0.6.0-chnan   2/2       Running   0          1d
+```
+
+Make sure you review the [beta limitations](https://github.com/kubernetes/contrib/tree/master/ingress/controllers/gce/BETA_LIMITATIONS.md) of this controller. In environments other than GCE/GKE, you need to [deploy a controller](https://github.com/kubernetes/contrib/tree/master/ingress/controllers) as a pod.
 
 ## The Ingress Resource
 
@@ -75,11 +83,15 @@ __Lines 8-9__: Each http rule contains the following information: A host (eg: fo
 
 __Lines 10-12__: A backend is a service:port combination as described in the [services doc](/docs/user-guide/services). Ingress traffic is typically sent directly to the endpoints matching a backend.
 
-__Global Parameters__: For the sake of simplicity the example Ingress has no global parameters, see the [api-reference](https://releases.k8s.io/{{page.githubbranch}}/pkg/apis/extensions/v1beta1/types.go) for a full definition of the resource. One can specify a global default backend in the absence of which requests that don't match a path in the spec are sent to the default backend of the Ingress controller. Though the Ingress resource doesn't support HTTPS yet, security configs would also be global.
+__Global Parameters__: For the sake of simplicity the example Ingress has no global parameters, see the [api-reference](https://releases.k8s.io/{{page.githubbranch}}/pkg/apis/extensions/v1beta1/types.go) for a full definition of the resource. One can specify a global default backend in the absence of which requests that don't match a path in the spec are sent to the default backend of the Ingress controller.
 
 ## Ingress controllers
 
-In order for the Ingress resource to work, the cluster must have an Ingress controller running. This is unlike other types of controllers, which typically run as part of the `kube-controller-manager` binary, and which are typically started automatically as part of cluster creation. You need to choose the ingress controller implementation that is the best fit for your cluster, or implement one.  Examples and instructions can be found [here](https://github.com/kubernetes/contrib/tree/master/Ingress).
+In order for the Ingress resource to work, the cluster must have an Ingress controller running. This is unlike other types of controllers, which typically run as part of the `kube-controller-manager` binary, and which are typically started automatically as part of cluster creation. You need to choose the ingress controller implementation that is the best fit for your cluster, or implement one.  Examples and instructions can be found [here](https://github.com/kubernetes/contrib/tree/master/ingress/controllers).
+
+## Before you begin
+
+The following document describes a set of cross platform features exposed through the Ingress resource. Ideally, all Ingress controllers should fulfill this specification, but we're not there yet. The docs for the GCE and nginx controllers are [here](https://github.com/kubernetes/contrib/blob/master/ingress/controllers/gce/README.md) and [here](https://github.com/kubernetes/contrib/blob/master/ingress/controllers/nginx/README.md) respectively. **Make sure you review controller specific docs so you understand the caveats of each one**.
 
 ## Types of Ingress
 
@@ -89,7 +101,7 @@ There are existing Kubernetes concepts that allow you to expose a single service
 
 {% include code.html language="yaml" file="ingress.yaml" ghlink="/docs/user-guide/ingress.yaml" %}
 
-If you create it using `kubectl -f` you should see:
+If you create it using `kubectl create -f` you should see:
 
 ```shell
 $ kubectl get ing
@@ -177,11 +189,44 @@ spec:
 
 __Default Backends__: An Ingress with no rules, like the one shown in the previous section, sends all traffic to a single default backend. You can use the same technique to tell a loadbalancer where to find your website's 404 page, by specifying a set of rules *and* a default backend. Traffic is routed to your default backend if none of the Hosts in your Ingress match the Host in the request header, and/or none of the paths match the url of the request.
 
+### TLS
+
+You can secure an Ingress by specifying a [secret](/docs/user-guide/secrets) that contains a TLS private key and certificate. Currently the Ingress only supports a single TLS port, 443, and assumes TLS termination. If the TLS configuration section in an Ingress specifies different hosts, they will be multiplexed on the same port according to the hostname specified through the SNI TLS extension (provided the Ingress controller supports SNI). The TLS secret must contain keys named `tls.crt` and `tls.key` that contain the certificate and private key to use for TLS, eg:
+
+```yaml
+apiVersion: v1
+data:
+  tls.crt: base64 encoded cert
+  tls.key: base64 encoded key
+kind: Secret
+metadata:
+  name: testsecret
+  namespace: default
+type: Opaque
+```
+
+Referencing this secret in an Ingress will tell the Ingress controller to secure the channel from the client to the loadbalancer using TLS:
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: no-rules-map
+spec:
+  tls:
+    - secretName: testsecret
+  backend:
+    serviceName: s1
+    servicePort: 80
+```
+
+Note that there is a gap between TLS features supported by various Ingress controllers. Please refer to documentation on [nginx](https://github.com/kubernetes/contrib/tree/master/ingress/controllers/nginx#https), [GCE](https://github.com/kubernetes/contrib/tree/master/ingress/controllers/gce#tls), or any other platform specific Ingress controller to understand how TLS works in your environment.
+
 ### Loadbalancing
 
 An Ingress controller is bootstrapped with some loadbalancing policy settings that it applies to all Ingress, such as the loadbalancing algorithm, backend weight scheme etc. More advanced loadbalancing concepts (eg: persistent sessions, dynamic weights) are not yet exposed through the Ingress. You can still get these features through the [service loadbalancer](https://github.com/kubernetes/contrib/tree/master/service-loadbalancer). With time, we plan to distill loadbalancing patterns that are applicable cross platform into the Ingress resource.
 
-It's also worth noting that even though health checks are not exposed directly through the Ingress, there exist parallel concepts in Kubernetes such as [readiness probes](https://github.com/kubernetes/kubernetes/blob/release-1.0/docs/user-guide/production-pods.md#liveness-and-readiness-probes-aka-health-checks) which allow you to achieve the same end result.
+It's also worth noting that even though health checks are not exposed directly through the Ingress, there exist parallel concepts in Kubernetes such as [readiness probes](https://github.com/kubernetes/kubernetes/blob/release-1.0/docs/user-guide/production-pods.md#liveness-and-readiness-probes-aka-health-checks) which allow you to achieve the same end result. Please review the controller specific docs to see how they handle health checks ([nginx](https://github.com/kubernetes/contrib/blob/master/ingress/controllers/nginx/README.md), [GCE](https://github.com/kubernetes/contrib/blob/master/ingress/controllers/gce/README.md#health-checks)).
 
 ## Updating an Ingress
 
@@ -234,7 +279,7 @@ You can achieve the same by invoking `kubectl replace -f` on a modified Ingress 
 
 ## Future Work
 
-* Various modes of HTTPS/TLS support (edge termination, sni etc)
+* Various modes of HTTPS/TLS support (eg: SNI, re-encryption)
 * Requesting an IP or Hostname via claims
 * Combining L4 and L7 Ingress
 * More Ingress controllers

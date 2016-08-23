@@ -1,7 +1,11 @@
 ---
+assignees:
+- erictune
+- thockin
+
 ---
 
-Deploy a CoreOS running Kubernetes environment. This particular guild is made to help those in an OFFLINE system, wither for testing a POC before the real deal, or you are restricted to be totally offline for your applications.
+Deploy a CoreOS running Kubernetes environment. This particular guide is made to help those in an OFFLINE system, wither for testing a POC before the real deal, or you are restricted to be totally offline for your applications.
 
 * TOC
 {:toc}
@@ -693,3 +697,12 @@ Kill all pods:
 ```shell
 for i in `kubectl get pods | awk '{print $1}'`; do kubectl delete pod $i; done
 ```
+
+## Support Level
+
+
+IaaS Provider        | Config. Mgmt | OS     | Networking  | Docs                                              | Conforms | Support Level
+-------------------- | ------------ | ------ | ----------  | ---------------------------------------------     | ---------| ----------------------------
+Bare-metal (Offline) | CoreOS       | CoreOS | flannel     | [docs](/docs/getting-started-guides/coreos/bare_metal_offline)              |          | Community ([@jeffbean](https://github.com/jeffbean))
+
+For support level information on all solutions, see the [Table of solutions](/docs/getting-started-guides/#table-of-solutions) chart.

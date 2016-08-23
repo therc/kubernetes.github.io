@@ -1,4 +1,9 @@
 ---
+assignees:
+- dchen1107
+- eparis
+- mikedanese
+
 ---
 
 This example shows how to assign a [pod](/docs/user-guide/pods/) to a specific [node](/docs/admin/node/) or to one of a set of nodes using node labels and the nodeSelector field in a pod specification. Generally this is unnecessary, as the scheduler will take care of things for you, but you may want to do so in certain circumstances like to ensure that your pod ends up on a machine with an SSD attached to it.
@@ -53,7 +58,7 @@ Like `nodeSelector`, affinity is based on labels. But it allows you to write muc
 
 Kubernetes v1.2 offers an alpha version of the first piece of the affinity mechanism, called [node affinity](https://github.com/kubernetes/kubernetes/blob/{{page.githubbranch}}/docs/design/nodeaffinity.md).
 There are currently two types of node affinity, called `requiredDuringSchedulingIgnoredDuringExecution` and
-`preferresDuringSchedulingIgnoredDuringExecution`. You can think of them as "hard" and "soft" respectively,
+`preferredDuringSchedulingIgnoredDuringExecution`. You can think of them as "hard" and "soft" respectively,
 in the sense that the former specifies rules that *must* be met for a pod to schedule onto a node (just like
 `nodeSelector` but using a more expressive syntax), while the latter specifies *preferences* that the scheduler
 will try to enforce but will not guarantee. The "IgnoredDuringExecution" part of the names means that, similar
@@ -73,8 +78,10 @@ Here's an example of a pod that uses node affinity:
 
 This node affinity rule says the pod can only be placed on a node with a label whose key is
 `kubernetes.io/e2e-az-name` and whose value is either `e2e-az1` or `e2e-az2`. In addition,
-among nodes that meet that criteria, nodes with a label whose key is `foo` and whose
-value is `bar` should be preferred.
+among nodes that meet that criteria, nodes with a label whose key is `another-annotation-key` and whose
+value is `another-annotation-value` should be preferred.
+
+You can see the operator `In` being used in the example. The new node affinity syntax supports the following operators: `In`, `NotIn`, `Exists`, `DoesNotExist`, `Gt`, `Lt`.
 
 If you specify both `nodeSelector` and `nodeAffinity`, *both* must be satisfied for the pod
 to be scheduled onto a candidate node.

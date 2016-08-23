@@ -1,4 +1,7 @@
 ---
+assignees:
+- karlkfi
+
 ---
 
 This guide will walk you through installing [Kubernetes-Mesos](https://github.com/mesosphere/kubernetes-mesos) on [Datacenter Operating System (DCOS)](https://mesosphere.com/product/) with the [DCOS CLI](https://github.com/mesosphere/dcos-cli) and operating Kubernetes with the [DCOS Kubectl plugin](https://github.com/mesosphere/dcos-kubectl).
@@ -128,3 +131,11 @@ $ dcos kubectl get pods --all-namespaces
     ```shell
 $ dcos package uninstall kubernetes
     ```
+## Support Level
+
+
+IaaS Provider        | Config. Mgmt | OS     | Networking  | Docs                                              | Conforms | Support Level
+-------------------- | ------------ | ------ | ----------  | ---------------------------------------------     | ---------| ----------------------------
+DCOS                 | Marathon   | CoreOS/Alpine | custom | [docs](/docs/getting-started-guides/dcos)                                   |          | Community ([Kubernetes-Mesos Authors](https://github.com/mesosphere/kubernetes-mesos/blob/master/AUTHORS.md))
+
+For support level information on all solutions, see the [Table of solutions](/docs/getting-started-guides/#table-of-solutions) chart.

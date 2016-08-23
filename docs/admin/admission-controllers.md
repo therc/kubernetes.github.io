@@ -1,4 +1,12 @@
 ---
+assignees:
+- bprashanth
+- davidopp
+- derekwaynecarr
+- erictune
+- janetkuo
+- thockin
+
 ---
 
 * TOC
@@ -136,8 +144,14 @@ namespace.  In order to enforce integrity of that process, we strongly recommend
 
 Yes.
 
-For Kubernetes 1.0, we strongly recommend running the following set of admission control plug-ins (order matters):
+For Kubernetes >= 1.2.0, we strongly recommend running the following set of admission control plug-ins (order matters):
 
 ```shell
---admission-control=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota
+--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,ResourceQuota
+```
+
+For Kubernetes >= 1.0.0, we strongly recommend running the following set of admission control plug-ins (order matters):
+
+```shell
+--admission-control=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,PersistentVolumeLabel,ResourceQuota
 ```

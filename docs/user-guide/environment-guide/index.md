@@ -1,4 +1,7 @@
 ---
+assignees:
+- mikedanese
+
 ---
 
 This example demonstrates running pods, replication controllers, and
@@ -23,7 +26,7 @@ for your platform.
 ## Optional: Build your own containers
 
 The code for the containers is under
-[containers/](/docs/user-guide/environment-guide/containers/)
+[containers/](/docs/user-guide/containers/)
 
 ## Get everything running
 

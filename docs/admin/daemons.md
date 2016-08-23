@@ -1,4 +1,7 @@
 ---
+assignees:
+- erictune
+
 ---
 
 * TOC
@@ -64,16 +67,18 @@ specified, they are defaulted to be equal.  Config with these not matching will 
 Also you should not normally create any pods whose labels match this selector, either directly, via
 another DaemonSet, or via other controller such as ReplicationController.  Otherwise, the DaemonSet
 controller will think that those pods were created by it.  Kubernetes will not stop you from doing
-this.  Once case where you might want to do this is manually create a pod with a different value on
+this.  One case where you might want to do this is manually create a pod with a different value on
 a node for testing.
 
 ### Running Pods on Only Some Nodes
 
 If you specify a `.spec.template.spec.nodeSelector`, then the DaemonSet controller will
 create pods on nodes which match that [node
-selector](https://github.com/kubernetes/kubernetes.github.io/tree/{{page.docsbranch}}/docs/user-guide/node-selection).
+selector](https://github.com/kubernetes/kubernetes.github.io/tree/{{page.docsbranch}}/docs/user-guide/node-selection).  
+If you specify a `scheduler.alpha.kubernetes.io/affinity` annotation in `.spec.template.metadata.annotations`,
+then DaemonSet controller will create pods on nodes which match that [node affinity](../../user-guide/node-selection/#alpha-feature-in-kubernetes-v12-node-affinity).
 
-If you do not specify a `.spec.template.spec.nodeSelector`, then the DaemonSet controller will
+If you do not specify a `.spec.template.spec.nodeSelector` nor `node affinity`, then the DaemonSet controller will
 create pods on all nodes.
 
 ## How Daemon Pods are Scheduled

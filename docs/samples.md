@@ -1,13 +1,9 @@
 ---
+assignees:
+- bgrant0607
+
 ---
-We have a wide variety of samples to choose from:
-
-* "Clustered Application Samples" and "Persistent Volume Samples" provide some
-examples that show how to implement some popular software packages such as OpenShift, Ceph, Cassandra, and WordPress. These guides 
-try to serve as canonical walkthroughs that help you use familiar packages with Kubernetes.
-
-* "Mulit-tier Application Samples" are generally of a more contrived and instructional nature, highlighting key concepts that
-you'll encounter when developing with Kubernetes, and teaching some principles of building Kubernetes applications.
+We have a wide variety of samples to choose from.
 
 ## Recently updated samples
 
@@ -90,7 +86,7 @@ h2, h3, h4 {
 <a href="https://github.com/kubernetes/kubernetes/tree/{{page.githubbranch}}/examples/guestbook" target="_blank" class="shadowbox">
   <img src="/images/docs/redis.svg"><br/>Guestbook + Redis
 </a>
-<a href="https://github.com/kubernetes/kubernetes/tree/{{page.githubbranch}}/examples/cassandra" target="_blank" class="shadowbox">
+<a href="https://github.com/kubernetes/kubernetes/tree/{{page.githubbranch}}/examples/storage/cassandra" target="_blank" class="shadowbox">
   <img src="/images/docs/cassandra.svg"><br/>Cloud Native Cassandra
 </a>
 <a href="https://github.com/kubernetes/kubernetes/tree/{{page.githubbranch}}/examples/mysql-wordpress-pd/" target="_blank" class="shadowbox">

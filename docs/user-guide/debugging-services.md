@@ -1,9 +1,14 @@
 ---
+assignees:
+- bprashanth
+- janetkuo
+- thockin
+
 ---
 
 An issue that comes up rather frequently for new installations of Kubernetes is
 that `Services` are not working properly.  You've run all your `Pod`s and
-`ReplicationController`s, but you get no response when you try to access them.
+`Deployment`s, but you get no response when you try to access them.
 This document will hopefully help you to figure out what's going wrong.
 
 * TOC
@@ -40,37 +45,27 @@ OUTPUT
 ## Running commands in a Pod
 
 For many steps here you will want to see what a `Pod` running in the cluster
-sees.  Kubernetes does not directly support interactive `Pod`s (yet), but you can
-approximate it:
+sees.  You can start a busybox `Pod` and run commands in it:
 
 ```shell
-$ cat <<EOF | kubectl create -f -
-apiVersion: v1
-kind: Pod
-metadata:
-  name: busybox-sleep
-spec:
-  containers:
-  - name: busybox
-    image: busybox
-    args:
-    - sleep
-    - "1000000"
-EOF
-pods/busybox-sleep
+$ kubectl run -i --tty busybox --image=busybox --generator="run-pod/v1"
+Waiting for pod default/busybox to be running, status is Pending, pod ready: false
+
+Hit enter for command prompt
+
+/ #
 ```
 
-Now, when you need to run a command (even an interactive shell) in a `Pod`-like
-context, use:
+If you already have a running `Pod`, run a command in it using:
 
 ```shell
-$ kubectl exec busybox-sleep -- <COMMAND>
+$ kubectl exec <POD-NAME> -c <CONTAINER-NAME> -- <COMMAND>
 ```
 
-or
+or run an interactive shell with:
 
 ```shell
-$ kubectl exec -ti busybox-sleep sh
+$ kubectl exec -ti <POD-NAME> -c <CONTAINER-NAME> sh
 / #
 ```
 
@@ -85,16 +80,16 @@ $ kubectl run hostnames --image=gcr.io/google_containers/serve_hostname \
                         --labels=app=hostnames \
                         --port=9376 \
                         --replicas=3
-CONTROLLER   CONTAINER(S)   IMAGE(S)                                  SELECTOR        REPLICAS
-hostnames    hostnames      gcr.io/google_containers/serve_hostname   app=hostnames   3
+deployment "hostnames" created
 ```
 
-Note that this is the same as if you had started the `ReplicationController` with
+`kubectl` commands will print the type and name of the resource created or mutated, which can then be used in subsequent commands. 
+Note that this is the same as if you had started the `Deployment` with
 the following YAML:
 
 ```yaml
-apiVersion: v1
-kind: ReplicationController
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
   name: hostnames
 spec:
@@ -118,10 +113,10 @@ Confirm your `Pod`s are running:
 
 ```shell
 $ kubectl get pods -l app=hostnames
-NAME              READY     STATUS    RESTARTS   AGE
-hostnames-0uton   1/1       Running   0          12s
-hostnames-bvc05   1/1       Running   0          12s
-hostnames-yp2kp   1/1       Running   0          12s
+NAME                        READY     STATUS    RESTARTS   AGE
+hostnames-632524106-bbpiw   1/1       Running   0          2m
+hostnames-632524106-ly40y   1/1       Running   0          2m
+hostnames-632524106-tlaok   1/1       Running   0          2m
 ```
 
 ## Does the Service exist?
@@ -156,7 +151,7 @@ So we have a culprit, let's create the `Service`.  As before, this is for the
 walk-through - you can use your own `Service`'s details here.
 
 ```shell
-$ kubectl expose rc hostnames --port=80 --target-port=9376
+$ kubectl expose deployment hostnames --port=80 --target-port=9376
 service "hostnames" exposed
 ```
 
@@ -164,8 +159,8 @@ And read it back, just to be sure:
 
 ```shell
 $ kubectl get svc hostnames
-NAME              CLUSTER_IP       EXTERNAL_IP       PORT(S)       SELECTOR               AGE
-hostnames         10.0.0.1         <none>            80/TCP        run=hostnames          1h
+NAME        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+hostnames   10.0.0.226   <none>        80/TCP    5s
 ```
 
 As before, this is the same as if you had started the `Service` with YAML:
@@ -564,6 +559,63 @@ There are three things to check:
 * Is your application serving on the port that you configured? Container
   Engine doesn't do port remapping, so if your application serves on 8080,
   the `containerPort` field needs to be 8080.
+
+### A Pod cannot reach itself via Service IP
+
+This mostly happens when `kube-proxy` is running in `iptables` mode and Pods
+are connected with bridge network. The `Kubelet` exposes a `hairpin-mode`
+[flag](http://kubernetes.io/docs/admin/kubelet/) that allows endpoints of a Service to loadbalance back to themselves
+if they try to access their own Service VIP. The `hairpin-mode` flag must either be
+set to `haripin-veth` or `promiscuous-bridge`.
+
+The common steps to trouble shoot this are as follows:
+
+* Confirm `hairpin-mode` is set to `haripin-veth` or `promiscuous-bridge`.
+You should see something like the below. `hairpin-mode` is set to
+`promiscuous-bridge` in the following example.
+
+```shell
+u@node$ ps auxw|grep kubelet
+root      3392  1.1  0.8 186804 65208 ?        Sl   00:51  11:11 /usr/local/bin/kubelet --enable-debugging-handlers=true --config=/etc/kubernetes/manifests --allow-privileged=True --v=4 --cluster-dns=10.0.0.10 --cluster-domain=cluster.local --configure-cbr0=true --cgroup-root=/ --system-cgroups=/system --hairpin-mode=promiscuous-bridge --runtime-cgroups=/docker-daemon --kubelet-cgroups=/kubelet --babysit-daemons=true --max-pods=110 --serialize-image-pulls=false --outofdisk-transition-frequency=0
+
+```
+
+* Confirm the effective `hairpin-mode`. To do this, you'll have to look at
+kubelet log. Accessing the logs depends on your Node OS. On some OSes it
+is a file, such as /var/log/kubelet.log, while other OSes use `journalctl`
+to access logs. Please be noted that the effective hairpin mode may not
+match `--hairpin-mode` flag due to compatibility. Check if there is any log
+lines with key word `hairpin` in kubelet.log. There should be log lines
+indicating the effective hairpin mode, like something below.
+
+```shell
+I0629 00:51:43.648698    3252 kubelet.go:380] Hairpin mode set to "promiscuous-bridge"
+```
+
+* If the effective hairpin mode is `hairpin-veth`, ensure the `Kubelet` has
+the permission to operate in `/sys` on node. If everything works properly,
+you should see something like:
+
+```shell
+u@node$ for intf in /sys/devices/virtual/net/cbr0/brif/*; do cat $intf/hairpin_mode; done
+1
+1
+1
+1
+```
+
+* If the effective hairpin mode is `promiscuous-bridge`, ensure `Kubelet`
+has the permission to manipulate linux bridge on node. If cbr0` bridge is
+used and configured properly, you should see:
+
+```shell
+u@node$ ifconfig cbr0 |grep PROMISC
+UP BROADCAST RUNNING PROMISC MULTICAST  MTU:1460  Metric:1
+
+```
+
+* Seek help if none of above works out.
+
 
 ## Seek help
 

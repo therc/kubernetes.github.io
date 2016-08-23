@@ -1,4 +1,10 @@
 ---
+assignees:
+- brendandburns
+- jbeda
+- mikedanese
+- thockin
+
 ---
 
 
@@ -54,7 +60,7 @@ cluster/kube-up.sh
 If you want more than one cluster running in your project, want to use a different name, or want a different number of worker nodes, see the `<kubernetes>/cluster/gce/config-default.sh` file for more fine-grained configuration before you start up your cluster.
 
 If you run into trouble, please see the section on [troubleshooting](/docs/getting-started-guides/gce/#troubleshooting), post to the
-[google-containers group](https://groups.google.com/forum/#!forum/google-containers), or come ask questions on [Slack](/docs/troubleshooting/#slack).
+[kubernetes-users group](https://groups.google.com/forum/#!forum/kubernetes-users), or come ask questions on [Slack](/docs/troubleshooting/#slack).
 
 The next few steps will show you:
 
@@ -213,3 +219,19 @@ field values:
 
 * Source Ranges: `10.0.0.0/8`
 * Allowed Protocols and Port: `tcp:1-65535;udp:1-65535;icmp`
+
+## Support Level
+
+
+IaaS Provider        | Config. Mgmt | OS     | Networking  | Docs                                              | Conforms | Support Level
+-------------------- | ------------ | ------ | ----------  | ---------------------------------------------     | ---------| ----------------------------
+GCE                  | Saltstack    | Debian | GCE         | [docs](/docs/getting-started-guides/gce)                                    |   | Project
+
+For support level information on all solutions, see the [Table of solutions](/docs/getting-started-guides/#table-of-solutions) chart.
+
+## Further reading
+
+Please see the [Kubernetes docs](/docs/) for more details on administering
+and using a Kubernetes cluster.
+ 
+

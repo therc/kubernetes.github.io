@@ -1,4 +1,8 @@
 ---
+assignees:
+- davidopp
+- lavalamp
+
 ---
 
 The cluster admin guide is for anyone creating or administering a Kubernetes cluster.
@@ -61,7 +65,7 @@ project](/docs/admin/salt).
 
 ## Multi-tenant support
 
-* **Resource Quota** ([resource-quota.md](/docs/admin/resource-quota))
+* **Resource Quota** ([resourcequota/](/docs/admin/resourcequota/))
 
 ## Security
 

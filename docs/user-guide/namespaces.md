@@ -1,4 +1,9 @@
 ---
+assignees:
+- derekwaynecarr
+- mikedanese
+- thockin
+
 ---
 
 Kubernetes supports multiple virtual clusters backed by the same physical cluster.
@@ -13,7 +18,7 @@ need the features they provide.
 
 Namespaces provide a scope for names.  Names of resources need to be unique within a namespace, but not across namespaces.
 
-Namespaces are a way to divide cluster resources between multiple uses (via [resource quota](/docs/admin/resource-quota)).
+Namespaces are a way to divide cluster resources between multiple uses (via [resource quota](/docs/admin/resourcequota/)).
 
 In future versions of Kubernetes, objects in the same namespace will have the same
 access control policies by default.
@@ -62,7 +67,7 @@ context.
 First get your current context:
 
 ```shell
-$ export CONTEXT=$(kubectl config view | grep current-context | awk '{print $2}')
+$ export CONTEXT=$(kubectl config view | awk '/current-context/ {print $2}')
 ```
 
 Then update the default namespace:

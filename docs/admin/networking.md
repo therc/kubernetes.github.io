@@ -1,4 +1,8 @@
 ---
+assignees:
+- lavalamp
+- thockin
+
 ---
 
 Kubernetes approaches networking somewhat differently than Docker does by
@@ -154,6 +158,15 @@ Follow the "With Linux Bridge devices" section of [this very nice
 tutorial](http://blog.oddbit.com/2014/08/11/four-ways-to-connect-a-docker/) from
 Lars Kellogg-Stedman.
 
+### Weave Net from Weaveworks
+
+[Weave Net](https://www.weave.works/documentation/net-1-6-0-introducing-weave/) is a 
+resilient and simple to use network for Kubernetes and its hosted applications.  
+Weave Net runs as a [CNI plug-in](https://www.weave.works/docs/net/latest/cni-plugin/)  
+or stand-alone.  In either version, it doesn’t require any configuration or extra code 
+to run, and in both cases, the network provides one IP address per pod - as is standard for Kubernetes.
+
+
 ### Flannel
 
 [Flannel](https://github.com/coreos/flannel#flannel) is a very simple overlay
@@ -167,19 +180,22 @@ people have reported success with Flannel and Kubernetes.
 complicated way to build an overlay network.  This is endorsed by several of the
 "Big Shops" for networking.
 
-### Weave
 
-[Weave](https://github.com/zettio/weave) is yet another way to build an overlay
-network, primarily aiming at Docker integration.
+### Project Calico
 
-### Calico
+[Project Calico](https://github.com/projectcalico/calico-containers/blob/master/docs/cni/kubernetes/README.md) is an open source container networking provider and network policy engine.
 
-[Calico](https://github.com/projectcalico/calico-containers) uses BGP to enable real container
-IPs.
+Calico provides a highly scalable networking and network policy solution for connecting Kubernetes pods based on the same IP networking principles as the internet.  Calico can be deployed without encapsulation or overlays to provide high-performance, high-scale data center networking.  Calico also provides fine-grained, intent based network security policy for Kubernetes pods via its distributed firewall.
+
+Calico can also be run in policy enforcement mode in conjunction with other networking solutions such as Flannel, aka [canal](https://github.com/tigera/canal), or native GCE networking.
 
 ### Romana
 
-[Romana](https://romana.io) is an open source software defined networking (SDN) solution that lets you deploy Kubernetes without an overlay network. 
+[Romana](http://romana.io) is an open source software defined networking (SDN) solution that lets you deploy Kubernetes without an overlay network. 
+
+### Contiv
+
+[Contiv](https://github.com/contiv/netplugin) provides configurable networking (native l3 using BGP, overlay using vxlan,  classic l2, or Cisco-SDN/ACI) for various use cases. [Contiv](http://contiv.io) is all open sourced.
 
 ## Other reading
 

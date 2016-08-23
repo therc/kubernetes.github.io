@@ -1,4 +1,6 @@
 ---
+assignees:
+
 ---
 
 * TOC
@@ -55,6 +57,11 @@ When something is said to have the same lifetime as a pod, such as a volume,
 that means that it exists as long as that pod (with that UID) exists. If that
 pod is deleted for any reason, even if an identical replacement is created, the
 related thing (e.g. volume) is also destroyed and created anew.
+
+![pod diagram](/images/docs/pod.svg){: style="max-width: 50%" }
+
+*A multi-container pod that contains a file puller and a 
+web server that uses a persistent volume for shared storage between the containers.*
 
 ## Motivation for pods
 

@@ -16,8 +16,8 @@ In this guide I will demonstrate how to deploy a Kubernetes cluster to Azure clo
 To get started, you need to checkout the code:
 
 ```shell
-git clone https://github.com/kubernetes/kubernetes
-cd kubernetes/docs/getting-started-guides/coreos/azure/
+https://github.com/weaveworks-guides/weave-kubernetes-coreos-azure
+cd weave-kubernetes-coreos-azure
 ```
 
 You will need to have [Node.js installed](http://nodejs.org/download/) on you machine. If you have previously used Azure CLI, you should have it already.
@@ -150,7 +150,7 @@ First, double-check how many replication controllers there are:
 
 ```shell
 core@kube-00 ~ $ kubectl get rc
-ONTROLLER     CONTAINER(S)   IMAGE(S)                                    SELECTOR            REPLICAS
+ONTROLLER      CONTAINER(S)   IMAGE(S)                                    SELECTOR            REPLICAS
 frontend       php-redis      kubernetes/example-guestbook-php-redis:v2   name=frontend       3
 redis-master   master         redis                                       name=redis-master   1
 redis-slave    worker         kubernetes/redis-slave:v2                   name=redis-slave    2
@@ -160,7 +160,6 @@ As there are 4 nodes, let's scale proportionally:
 
 ```shell
 core@kube-00 ~ $ kubectl scale --replicas=4 rc redis-slave
->>>>>>> coreos/azure: Updates for 1.0
 scaled
 core@kube-00 ~ $ kubectl scale --replicas=4 rc frontend
 scaled
@@ -213,7 +212,7 @@ You then should be able to access it from anywhere via the Azure virtual IP for 
 
 ## Next steps
 
-You now have a full-blow cluster running in Azure, congrats!
+You now have a full-blown cluster running in Azure, congrats!
 
 You should probably try deploy other [example apps](https://github.com/kubernetes/kubernetes/tree/{{page.githubbranch}}/examples/) or write your own ;)
 
@@ -228,3 +227,20 @@ If you don't wish care about the Azure bill, you can tear down the cluster. It's
 > Note: make sure to use the _latest state file_, as after scaling there is a new one.
 
 By the way, with the scripts shown, you can deploy multiple clusters, if you like :)
+
+## Support Level
+
+
+IaaS Provider        | Config. Mgmt | OS     | Networking  | Docs                                              | Conforms | Support Level
+-------------------- | ------------ | ------ | ----------  | ---------------------------------------------     | ---------| ----------------------------
+Azure                | CoreOS       | CoreOS | Weave       | [docs](/docs/getting-started-guides/coreos/azure/)                    |          | Community ([@errordeveloper](https://github.com/errordeveloper), [@squillace](https://github.com/squillace), [@chanezon](https://github.com/chanezon), [@crossorigin](https://github.com/crossorigin))
+
+
+For support level information on all solutions, see the [Table of solutions](/docs/getting-started-guides/#table-of-solutions) chart.
+
+
+## Further reading
+
+Please see the [Kubernetes docs](/docs/) for more details on administering
+and using a Kubernetes cluster
+

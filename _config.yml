@@ -14,11 +14,16 @@ lsi: false
 defaults:
   -
     scope:
+      path: ""
+    values:
+      version: "v1.3"
+      githubbranch: "master"
+      docsbranch: "release-1.3"
+  -
+    scope:
       path: "docs"
     values:
-      version: "v1.2"
       layout: docwithnav
       showedit: true
-      githubbranch: "release-1.2"
-      docsbranch: "master"
+
 permalink: pretty
